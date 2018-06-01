@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Chatbox</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+    crossorigin="anonymous">
+</head>
+
+<body style="padding-top: 100px; padding-bottom: 100px">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-body">
+            <div id="join">
+              <div class="row">
+                <div class="col-md-6">
+                  <form method="post" id="joinChat">
+                    <div class='input-group'>
+                      <input type='text' name='username' class="form-control" placeholder="Enter your username">
+
+                      <div class='input-group-append'>
+                        <button class='btn btn-primary'>Join</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div id="chatbox" style="display: none">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="card">
+                    <div class="card-header">Chatbox</div>
+                    <div class="card-body">
+                      <dl id="messageList"></dl>
+                      <hr>
+                      <form id="sendMessage" method="post">
+                        <div class='input-group'>
+                          <input type='text' name='message' class="form-control" placeholder="Type your message...">
+
+                          <div class='input-group-append'>
+                            <button class='btn btn-primary'>Send</button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card">
+                    <div class="card-header">Users Online</div>
+                    <div class="card-body p-0">
+                      <ul id="onlineUsers" class="list-group list-group-flush"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@pusher/chatkit@0.7.12/dist/web/chatkit.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    const joinChat = document.getElementById('joinChat')
+
+    joinChat.addEventListener('submit', (e) => {
+      e.preventDefault()
+
+      const username = e.target.username.value
+
+      axios.post('http://localhost:3001/users', { username })
+        .then(() => {
+          document.getElementById('join').style.display = 'none'
+          document.getElementById('chatbox').style.display = 'block'
+
+          const tokenProvider = new Chatkit.TokenProvider({
+            url: 'http://localhost:3001/authenticate'
+          })
+
+          const chatManager = new Chatkit.ChatManager({
+            instanceLocator: 'v1:us1:0d75c0a4-060e-4175-9929-775141e0a0c2',
+            userId: username,
+            tokenProvider: tokenProvider
+          })
+
+          chatManager
+            .connect()
+            .then(currentUser => {
+              currentUser.subscribeToRoom({
+                roomId: 8238816,
+                hooks: {
+                  onNewMessage: message => {
+                    const { senderId, text } = message
+
+                    const messageList = document.getElementById('messageList')
+                    const messageUser = document.createElement('dt')
+                    const messageBody = document.createElement('dd')
+
+                    messageUser.appendChild(document.createTextNode(senderId))
+                    messageBody.appendChild(document.createTextNode(text))
+
+                    messageList.appendChild(messageUser)
+                    messageList.appendChild(messageBody)
+                  },
+                  onUserCameOnline: user => {
+                    // add element to DOM
+                    if (currentUser.id !== user.id) {
+                      addUserElement(user)
+                    }
+                  },
+                  onUserWentOffline: user => {
+                    // remove element from DOM
+                    const singleUser = document.getElementById(user.id)
+                    singleUser.parentNode.removeChild(singleUser)
+                  }
+                },
+                messageLimit: 0
+              }).then(() => {
+                // display online users
+                currentUser.rooms[0].users.forEach(user => {
+                  if (user.presence.state === 'online') {
+                    addUserElement(user)
+                  }
+                })
+
+                // send chat message
+                const sendMessage = document.getElementById('sendMessage')
+                sendMessage.addEventListener("submit", e => {
+                  e.preventDefault()
+
+                  const message = e.target.message.value
+
+                  currentUser.sendMessage({
+                    text: message,
+                    roomId: 8238816
+                  })
+
+                  e.target.message.value = ''
+                })
+              }).catch(error => console.error(error))
+            }).catch(error => console.error(error))
+        }).catch(error => console.error(error))
+    })
+
+    function addUserElement(user) {
+      const onlineUsers = document.getElementById('onlineUsers')
+      const singleUser = document.createElement('li')
+
+      singleUser.className = 'list-group-item'
+      singleUser.id = user.id
+
+      singleUser.appendChild(document.createTextNode(user.name))
+      onlineUsers.appendChild(singleUser)
+    }
+  </script>
+
+</body>
+
+</html>
