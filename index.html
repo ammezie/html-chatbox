@@ -19,7 +19,7 @@
             <div id="join">
               <div class="row">
                 <div class="col-md-6">
-                  <form method="post" id="joinChat">
+                  <form method="post" id="username-form">
                     <div class='input-group'>
                       <input type='text' name='username' class="form-control" placeholder="Enter your username">
 
@@ -71,9 +71,9 @@
   <script src="https://unpkg.com/@pusher/chatkit@0.7.12/dist/web/chatkit.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
-    const joinChat = document.getElementById('joinChat')
+    const usernameForm = document.getElementById('username-form')
 
-    joinChat.addEventListener('submit', (e) => {
+    usernameForm.addEventListener('submit', (e) => {
       e.preventDefault()
 
       const username = e.target.username.value
