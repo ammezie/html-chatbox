@@ -113,27 +113,23 @@
                     messageList.appendChild(messageBody)
                   },
                   onUserCameOnline: user => {
-                    // add element to DOM
                     if (currentUser.id !== user.id) {
                       addUserElement(user)
                     }
                   },
                   onUserWentOffline: user => {
-                    // remove element from DOM
                     const singleUser = document.getElementById(user.id)
                     singleUser.parentNode.removeChild(singleUser)
                   }
                 },
                 messageLimit: 100
               }).then(() => {
-                // display online users
                 currentUser.rooms[0].users.forEach(user => {
                   if (user.presence.state === 'online') {
                     addUserElement(user)
                   }
                 })
 
-                // send chat message
                 const sendMessage = document.getElementById('sendMessage')
                 sendMessage.addEventListener("submit", e => {
                   e.preventDefault()
