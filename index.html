@@ -19,7 +19,7 @@
             <div id="join">
               <div class="row">
                 <div class="col-md-6">
-                  <form method="post" id="joinChat">
+                  <form method="post" id="username-form">
                     <div class='input-group'>
                       <input type='text' name='username' class="form-control" placeholder="Enter your username">
 
@@ -71,9 +71,9 @@
   <script src="https://unpkg.com/@pusher/chatkit@0.7.12/dist/web/chatkit.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
-    const joinChat = document.getElementById('joinChat')
+    const usernameForm = document.getElementById('username-form')
 
-    joinChat.addEventListener('submit', (e) => {
+    usernameForm.addEventListener('submit', (e) => {
       e.preventDefault()
 
       const username = e.target.username.value
@@ -90,7 +90,7 @@
           const chatManager = new Chatkit.ChatManager({
             instanceLocator: 'v1:us1:0d75c0a4-060e-4175-9929-775141e0a0c2',
             userId: username,
-            tokenProvider: tokenProvider
+            tokenProvider
           })
 
           chatManager
@@ -113,27 +113,23 @@
                     messageList.appendChild(messageBody)
                   },
                   onUserCameOnline: user => {
-                    // add element to DOM
                     if (currentUser.id !== user.id) {
                       addUserElement(user)
                     }
                   },
                   onUserWentOffline: user => {
-                    // remove element from DOM
                     const singleUser = document.getElementById(user.id)
                     singleUser.parentNode.removeChild(singleUser)
                   }
                 },
-                messageLimit: 0
+                messageLimit: 100
               }).then(() => {
-                // display online users
                 currentUser.rooms[0].users.forEach(user => {
                   if (user.presence.state === 'online') {
                     addUserElement(user)
                   }
                 })
 
-                // send chat message
                 const sendMessage = document.getElementById('sendMessage')
                 sendMessage.addEventListener("submit", e => {
                   e.preventDefault()
