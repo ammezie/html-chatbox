@@ -1,6 +1,6 @@
 # html-chatbox
 
-How to build an HTML chatbox with Chatkit
+How to build an HTML chatbox with Chatkit - [https://pusher.com/tutorials/html-chatbox-chatkit](https://pusher.com/tutorials/html-chatbox-chatkit)
 
 ### Getting Started
 
