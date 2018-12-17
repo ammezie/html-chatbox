@@ -66,7 +66,7 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/@pusher/chatkit@0.7.12/dist/web/chatkit.js"></script>
+  <script src="https://unpkg.com/@pusher/chatkit-client"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
     const usernameForm = document.getElementById('username-form')
@@ -97,7 +97,7 @@
               currentUser.subscribeToRoom({
                 roomId: 8238816,
                 hooks: {
-                  onNewMessage: message => {
+                  onMessage: message => {
                     const { senderId, text } = message
 
                     const messageList = document.getElementById('messageList')
@@ -110,15 +110,17 @@
                     messageList.appendChild(messageUser)
                     messageList.appendChild(messageBody)
                   },
-                  onUserCameOnline: user => {
-                    if (currentUser.id !== user.id) {
-                      addUserElement(user)
+                  onPresenceChanged: ({ previous, current }, user) => {
+                    if (current === 'online') {
+                      if (currentUser.id !== user.id) {
+                        addUserElement(user)
+                      }
+                    }
+                    if (current === 'offline') {
+                      const singleUser = document.getElementById(user.id)
+                      singleUser.parentNode.removeChild(singleUser)
                     }
                   },
-                  onUserWentOffline: user => {
-                    const singleUser = document.getElementById(user.id)
-                    singleUser.parentNode.removeChild(singleUser)
-                  }
                 },
                 messageLimit: 100
               }).then(() => {
